@@ -105,7 +105,7 @@ kns_consumer.py: testing use of AWS Kineses consumer.
 ```
 
 
-### In *dba-scripts/repos/global-scripts/Migraciones_ECS
+### In *dba-scripts/repos/global-scripts/Migraciones_ECS*
 ```
 migrate-database.py: replicating a database through pglogical between different server versions.
 ```
