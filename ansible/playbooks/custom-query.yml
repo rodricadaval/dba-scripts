@@ -1,0 +1,10 @@
+- name: Check rds state in groups
+  hosts: "{{ service }}"
+  vars:
+    anansiblevar_python_interpreter: /usr/bin/python3
+  connection: local
+
+  tasks:
+  - name: Executing query in each host
+    local_action: command python3 ~/postgresql/common/execute-custom-file.py --profile {{ profile }} --rds-instance {{ inventory_hostname }} --file {{ file }} --no-opsgenie --list-users "{{ users }}"
+    register: result

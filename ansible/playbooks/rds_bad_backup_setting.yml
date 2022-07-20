@@ -1,0 +1,7 @@
+- name: Check backup retention value in groups
+  hosts: "{{ group }}"
+  connection: local
+
+  tasks:
+  - name: Check in profile
+    local_action: command python3 ~/global-scripts/check_rds_retention_period.py --profile {{ inventory_hostname }}

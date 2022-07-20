@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: false
+  gather_facts: no
+  roles:
+    - mysql
+  tags:
+    - mysql_rds

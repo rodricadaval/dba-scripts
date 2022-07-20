@@ -1,0 +1,189 @@
+#!/usr/bin/python3
+import argparse
+from lib.variables import Variables
+from lib.secrets import Secrets
+from lib.infra import Infra
+from lib.rds import RDSClient
+from lib.r53 import R53Client
+import traceback
+
+# Main Parser
+parser = argparse.ArgumentParser()
+subparsers = parser.add_subparsers(dest="category")
+
+# Variables subparser
+var_parse = subparsers.add_parser('variables', help="Perform actions over DynamoDB variables")
+var_parse.add_argument("subcommand", help="[ get_variable, put_variable, delete_variable, search_variable, search_value, get_value ]")
+var_parse.add_argument("--country", help="country prefix" , required=True)
+
+# Secrets subparsers
+secret_parse = subparsers.add_parser('secrets', help="Perform actions over microservices secrets")
+secret_parse.add_argument("subcommand",  help="[ get_all_secrets, get_secret ]")
+secret_parse.add_argument("--name", help="name of the microservice", required=True)
+secret_parse.add_argument("--value", help="value for a secret", required=False)
+secret_parse.add_argument("--secret", help="key for a secret", required=False)
+secret_parse.add_argument("--country", help="country prefix" , required=False)
+
+# Variables get|put|search options
+put_variable_options=var_parse.add_argument_group('[get|put]_variable arguments')
+put_variable_options.add_argument("--name", help="name of the inventory variable to get/update", required=False)
+put_variable_options.add_argument("--value", help="value for a variable to update", required=False)
+search_variable_options=var_parse.add_argument_group('search_[variable|value] arguments')
+search_variable_options.add_argument("--expr", help="search expression", required=False)
+search_variable_options2=var_parse.add_argument_group('get_value arguments')
+search_variable_options2.add_argument("--exact", help="value for a variable", required=False)
+
+# Infra subparsers
+infra_parse = subparsers.add_parser('infra', help="Perform actions over infrastructure")
+infra_parse.add_argument("subcommand", help="[ search_instances ]")
+infra_parse.add_argument("--country", help="country prefix" , required=True)
+infra_parse.add_argument("--name", help="instance name to search" , required=True)
+
+# Rds subparsers
+rds_parse = subparsers.add_parser('rds', help="Perform actions over RDS")
+rds_parse.add_argument("subcommand", help="[ search_instances, apply_tag, connect, arrange_inventory, generate_new_csv, delete_instance_from_shelve ]")
+rds_parse.add_argument("--country", help="country prefix", default="", required=False)
+rds_parse.add_argument("--name", help="instance name to search" , default="", required=False)
+rds_parse.add_argument("--engine", help="engine [postgres, mysql, mariadb, mongodb, documentdb]", default="postgres", required=False)
+rds_tag_options=rds_parse.add_argument_group('apply_tag')
+rds_tag_options.add_argument("--tag", help="[name=value]")
+rds_tag_options.add_argument("--family", help="master or replica or all" , default="all")
+rds_tag_options2=rds_parse.add_argument_group('connect')
+rds_tag_options2.add_argument("--database", help="database", default="postgres", required=False)
+rds_tag_options2.add_argument("--user", help="user", default="dba_test_service", required=False)
+rds_tag_options2.add_argument("--secret", help="secret", default="", required=False)
+rds_tag_options3=rds_parse.add_argument_group('get_info')
+rds_tag_options3.add_argument("--agument", help="[ all, DBInstanceClass, DBInstanceStatus, Endpoint.Address, AllocatedStorage, PreferredMaintenanceWindow]", default="Endpoint.Address", required=False)
+rds_tag_options4=rds_parse.add_argument_group('arrange_inventory')
+rds_tag_options5=rds_parse.add_argument_group('arrange_dynamo')
+rds_tag_options6=rds_parse.add_argument_group('generate_new_csv')
+rds_tag_options7=rds_parse.add_argument_group('delete_instance_from_shelve')
+rds_tag_options8=rds_parse.add_argument_group('delete_instance_from_dynamo')
+rds_tag_options9=rds_parse.add_argument_group('run')
+rds_tag_options9.add_argument("--file", help="filename", default="", required=False)
+rds_tag_options9.add_argument("--query", help="Query", default="", required=False)
+rds_tag_options10=rds_parse.add_argument_group('modify_inventory')
+rds_tag_options10.add_argument("--parameter", help="param=value", default="", required=False)
+
+# R53 subparsers
+r53_parse = subparsers.add_parser('r53', help="Perform actions over infrastructure")
+r53_parse.add_argument("subcommand", help="[ search_cname, modify_cname ]")
+r53_parse.add_argument("--country", help="country prefix", required=True)
+r53_parse.add_argument("--name", help="instance name to search", required=True)
+#r53_parse.add_argument("--record", help="Current Record", required=False)
+
+# DocDB subparsers
+docdb_parse = subparsers.add_parser('docdb', help="Perform actions over DocDB")
+docdb_parse.add_argument("subcommand", help="[ search_instances, search_clusters, apply_tag ]")
+docdb_parse.add_argument("--country", help="country prefix" , required=True)
+docdb_parse.add_argument("--name", help="instance name to search" , default="all", required=True)
+docdb_tag_options=docdb_parse.add_argument_group('apply_tag')
+docdb_tag_options.add_argument("--tag", help="[name=value]", required=True)
+docdb_tag_options.add_argument("--engine", help="engine" , default="postgres", required=True)
+docdb_tag_options.add_argument("--family", help="master or replica or all" , default="all", required=False)
+
+# Parse Args
+args = parser.parse_args()
+
+# Route command
+try:
+    if "variables" in args.category:
+        vars = Variables(args.name, args.country)
+        if "get_variable" in args.subcommand:
+            print(vars.get_vars(args.name))
+        if "put_variable" in args.subcommand:
+            print(vars.update_vars(args.name, args.value))
+        if "delete_variable" in args.subcommand:
+            print(vars.delete_vars(args.name))
+        if "search_variable" in args.subcommand:
+            print(vars.search_vars(args.expr))
+        if "search_value" in args.subcommand:
+            print(vars.search_values(args.expr))
+        if "get_value" in args.subcommand:
+            print(vars.get_values(args.exact))
+    if "secrets" in args.category:
+        secrets = Secrets(args.name)
+        if "get_all_secrets" in args.subcommand:
+            print(secrets.get_all_secrets(args.name))
+        if "get_secret" in args.subcommand:
+            print(secrets.get_secret(args.name, args.secret, args.country))
+    if "infra" in args.category:
+        if "search_instances" in args.subcommand:
+            infra = Infra('ec2',args.country)
+            print(infra.search_instances(args.name))
+    if "rds" in args.category:
+        if "search_instances" in args.subcommand:
+            if not args.country or not args.name:
+                raise TypeError("Los parameters country y name son obligatorios")
+            rds = Infra('rds', args.country)
+            print(rds.search_instances(args.name))
+        elif "apply_tag" in args.subcommand:
+            if not args.country or not args.name or not args.tag:
+                raise TypeError("Los parameters country, name y tag son obligatorios")
+            rds = Infra('rds', args.country)
+            print(rds.apply_tag_in_instances(args.name, args.tag, args.engine, args.family))
+        elif "connect" in args.subcommand:
+            if not args.country or not args.name:
+                raise TypeError("Los parameters country y name son obligatorios")
+            rds = RDSClient(args.country)
+            rds.connect(args.name, args.engine, args.database, args.user, args.secret)
+        elif "get_info" in args.subcommand:
+            if not args.country or not args.name:
+                raise TypeError("Los parameters country y name son obligatorios")
+            rds = RDSClient(args.country)
+            rds.get_info(args.name, args.engine, args.Argument)
+        if "modify_inventory" in args.subcommand:
+            if not args.country or not args.name or not args.parameter:
+                raise TypeError("Los parameters country y name son obligatorios")
+            rds = RDSClient(args.country)
+            rds.modify_inventory(args.name, args.parameter)
+        elif "arrange_inventory" in args.subcommand:
+            if not args.country:
+                args.country = "c"
+            rds = RDSClient(args.country)
+            rds.arange_inventory(args.engine)
+        elif "arrange_dynamo" in args.subcommand:
+            if not args.country:
+                args.country = "c"
+            rds = RDSClient(args.country)
+            rds.arange_dynamo(args.engine)
+        elif "generate_new_csv" in args.subcommand:
+            if not args.country:
+                args.country = "c"
+            rds = RDSClient(args.country)
+            rds.generate_new_csv()
+        elif "populate_dynamo" in args.subcommand:
+            if not args.country:
+                args.country = "c"
+            rds = RDSClient(args.country)
+            rds.populate_all_rds_dynamo()
+        elif "delete_instance_from_dynamo" in args.subcommand:
+            if not args.country or not args.name:
+                raise TypeError("Los parameters country y name son obligatorios")
+            rds = RDSClient(args.country)
+            rds.delete_instance_from_dynamo(args.name)
+        elif "run" in args.subcommand:
+            if not args.country or not args.name or not args.database:
+                raise TypeError("Los parameters country, name y database son obligatorios")
+            if not args.query and not args.file:
+                raise TypeError("El parameter query o file debe existir")
+            rds = RDSClient(args.country)
+            rds.run(args.name, args.engine, args.database, args.user, args.secret, args.file, args.query)
+    if "r53" in args.category:
+        if "search_cname" in args.subcommand:
+            r53 = R53Client(args.country)
+            print(r53.get_record(args.name, args.record))
+        elif "modify_cname" in args.subcommand:
+            docdb = Infra('docdb', args.country)
+            print(docdb.search_clusters(args.name))
+    if "docdb" in args.category:
+        if "search_instances" in args.subcommand:
+            docdb = Infra('docdb', args.country)
+            print(docdb.search_instances(args.name))
+        elif "search_clusters" in args.subcommand:
+            docdb = Infra('docdb', args.country)
+            print(docdb.search_clusters(args.name))
+except TypeError as e:
+    print(e)
+    traceback.print_exc()
+    parser.print_help()

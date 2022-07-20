@@ -1,0 +1,12 @@
+- name: Check txids state per rds
+  hosts: "{{ service }}"
+  vars:
+    anansiblevar_python_interpreter: /usr/bin/python3
+  connection: local
+
+  tasks:
+  - name: Verify each rds
+    local_action: command python3 ~/postgresql/alert_txid_reaching_limit.py -p {{ profile }} -i {{ inventory_hostname }}
+    register: result
+
+#USAGE: ansible-playbook -i ~/ansible/group_vars/xx-xx-west-2/dynamic_inventory.yaml --extra-var "service=postgres profile=xx-xx-west-2" ~/ansible/playbooks/postgres_reaching_transaction_ids_limit.yml >> /tmp/postgres_reaching_transaction_ids_limit.log 2>&1

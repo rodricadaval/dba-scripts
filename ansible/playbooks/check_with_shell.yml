@@ -1,0 +1,8 @@
+- name: Check connectivity in Target Groups
+  hosts: "{{ service }}"
+  connection: local
+  vars_files:
+    - "../vars/{{ service }}_vars.yml"
+  tasks:
+  - name: Connect to database
+    shell: "telnet {{ anansiblevar_host }} {{ anansiblevar_port }}"

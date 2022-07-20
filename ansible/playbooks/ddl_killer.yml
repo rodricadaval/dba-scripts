@@ -1,0 +1,10 @@
+- name: Check rds state in groups
+  hosts: "{{ service }}"
+  vars:
+    anansiblevar_python_interpreter: /usr/bin/python3  
+  connection: local
+  
+  tasks:
+  - name: Kill in each host
+    local_action: command python3 ~/postgresql/ddl-in-productive-hours-killer.py --host {{ anansiblevar_host }} --action kill --list-users "dba_test_service"
+    register: result

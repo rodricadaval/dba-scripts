@@ -1,0 +1,1 @@
+SELECT relid, schemaname, relname, n_live_tup, n_dead_tup, round((n_dead_tup*100/n_live_tup),2) as pct, 'VACUUM (VERBOSE,ANALYZE) ' || schemaname || '.' || relname || ';' as vacuum FROM pg_stat_user_tables WHERE n_live_tup > 0 ORDER BY n_dead_tup DESC LIMIT 30;

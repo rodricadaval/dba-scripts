@@ -1,0 +1,1 @@
+db.adminCommand({killOp: 1, op: <opid of running or blocked query>});

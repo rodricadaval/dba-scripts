@@ -1,0 +1,6 @@
+db.adminCommand(
+  {
+     renameCollection: "test.orders",
+     to: "test.orders-2016"
+  }
+)

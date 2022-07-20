@@ -1,0 +1,1 @@
+SELECT pv.pid, pv.datname, pv.relid::regclass::text as table, pv.phase, pv.heap_blks_total, pv.heap_blks_scanned, pv.heap_blks_vacuumed, pv.index_vacuum_count, pv.num_dead_tuples, sa.usename, left(sa.query, 50) as query, now()-query_start as time FROM pg_stat_progress_vacuum pv INNER JOIN pg_stat_activity sa ON pv.pid = sa.pid;

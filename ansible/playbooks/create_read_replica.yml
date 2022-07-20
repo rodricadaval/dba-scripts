@@ -1,0 +1,48 @@
+- name: Create read new replica for rds instance
+  hosts: "{{ rds }}"
+  connection: local
+  vars:
+    anansiblevar_python_interpreter: /usr/bin/python3
+ 
+  tasks:
+  - name: Getting master info prior creating replica
+    community.aws.rds_instance_info:
+      profile: "{{ profile }}"
+      db_instance_identifier: "{{ rds }}"
+    register: master_info
+
+  - name: Identifico el monitoring role arn
+    set_fact:
+      role_arn: "{{ 'arn:aws:iam::XXXXXXXXXXXXXX:role/rds-role' if profile in ['xx-xx-west-2', 'xx-xx-east-1'] else 'arn:aws:iam::XXXXXXXXXXXXX2:role/rds-role' if profile == 'xx-xx-east-1' else 'arn:aws:iam::XXXXXXXXXXXXX3:role/rds-role' if profile == 'xx-xx-west-2' else 'arn:aws:iam::XXXXXXXXXXXXX4:role/rds-role' }}"
+
+  - name: Create a read-only replica and do not wait for it to become available
+    community.aws.rds_instance:
+      profile: "{{ profile }}"
+      creation_source: instance
+      multi_az: no
+      publicly_accessible: no
+      db_instance_class: "{{ class | default('db.m5.large') }}"
+      db_instance_identifier: "{{ master_info['instances'][0]['db_instance_identifier'] }}-read"
+      kms_key_id: "{{ master_info['instances'][0]['kms_key_id'] }}"
+      vpc_security_group_ids: "{{ master_info | community.general.json_query('instances[0].vpc_security_groups[*].vpc_security_group_id') }}"
+      port: "{{ master_info['instances'][0]['endpoint']['port'] }}"
+      storage_type: "gp2"
+      storage_encrypted: "{{ master_info['instances'][0]['storage_encrypted'] }}"
+      read_replica: yes
+      source_db_instance_identifier: "{{ rds }}"
+      enable_performance_insights: yes
+      performance_insights_kms_key_id: "{{ master_info['instances'][0]['performance_insights_kms_key_id'] }}"
+      performance_insights_retention_period: 7
+      preferred_maintenance_window: "{{ master_info['instances'][0]['preferred_maintenance_window'] }}"
+      monitoring_interval: 60
+      monitoring_role_arn: "{{ role_arn }}"
+      tags:
+        environment: "{{ master_info['instances'][0]['tags']['environment'] }}"
+        owner: dba
+        maintenance: "no"
+        area: "{{ master_info['instances'][0]['tags']['area'] | default(area) }}"
+        role: replica
+        country: "{{ master_info['instances'][0]['tags']['country'] | upper }}"
+      backup_retention_period: 0
+      wait: no
+      copy_tags_to_snapshot: yes

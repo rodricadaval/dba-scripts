@@ -1,0 +1,1 @@
+SELECT EXTRACT(HOURS FROM now() - pg_last_xact_replay_timestamp())::text || ' hours ' || EXTRACT(MINUTES FROM now() - pg_last_xact_replay_timestamp())::text || ' minutes ' || round(EXTRACT(SECONDS FROM now() - pg_last_xact_replay_timestamp())::numeric,2)::text || ' seconds' as delay;

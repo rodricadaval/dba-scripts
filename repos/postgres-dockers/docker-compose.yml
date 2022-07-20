@@ -1,0 +1,78 @@
+version: '3'
+services:
+  pg9:
+    image: postgres:9.6
+    volumes:
+      - postgres9-data:/var/lib/postgresql/data
+    ports:
+      - 5733:5432
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=testpass
+
+  pg10:
+    image: postgres:10.20
+    volumes:
+      - postgres10-data:/var/lib/postgresql/data
+    ports:
+      - 5734:5432
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=testpass
+  pg11:
+    image: postgres:11.15
+    volumes:
+      - postgres11-data:/var/lib/postgresql/data
+    ports:
+      - 5735:5432
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=testpass
+
+  pg12:
+    image: postgres:12.10
+    volumes:
+      - postgres12-data:/var/lib/postgresql/data
+    ports:
+      - 5736:5432
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=testpass
+
+  pg13:
+    image: postgres:13.6
+    volumes:
+      - postgres13-data:/var/lib/postgresql/data
+    ports:
+      - 5737:5432
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=testpass
+  pg14:
+    image: postgres:14.2
+    volumes:
+      - postgres14-data:/var/lib/postgresql/data
+    ports:
+      - 5738:5432
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=testpass
+
+volumes:
+  postgres9-data:
+  postgres10-data:
+  postgres11-data:
+  postgres12-data:
+  postgres13-data:
+  postgres14-data:
+
+networks:
+  default:
+    external:
+      name: postgres_dockers_custom2

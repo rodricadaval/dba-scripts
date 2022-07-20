@@ -1,0 +1,13 @@
+- name: Check integer state in groups
+  hosts: "{{ service }}"
+  vars:
+    anansiblevar_python_interpreter: /usr/bin/python3  
+  connection: local
+  
+  tasks:
+  - name: Verify each database in host
+    local_action: command python3 ~/postgresql/common/integer_reaching_limit_per_host.py --profile {{ profile }} --rds-instance {{ inventory_hostname }} --no-opsgenie
+    register: result
+
+
+#USAGE: ansible-playbook -i ~/ansible/group_vars/xx-x-west-2/dynamic_inventory.yaml --extra-var "service=postgres profile=xx-xx-west-2" ~/ansible/playbooks/postgres_integer_reaching_max_per_host.yml >> /tmp/postgres_integer_reaching_max.log 2>&1

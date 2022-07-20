@@ -1,0 +1,9 @@
+db.currentOp(
+   {
+     "waitingForLock" : true,
+     $or: [
+        { "op" : { "$in" : [ "insert", "update", "remove" ] } },
+        { "command.findandmodify": { $exists: true } }
+    ]
+   }
+)

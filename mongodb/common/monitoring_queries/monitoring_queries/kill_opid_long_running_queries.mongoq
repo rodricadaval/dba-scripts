@@ -1,0 +1,1 @@
+db.adminCommand({killOp: 1, op: OPIDHERE});

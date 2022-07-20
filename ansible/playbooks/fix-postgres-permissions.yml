@@ -1,0 +1,15 @@
+- name: Check rds state in groups
+  hosts: "{{ service }}"
+  vars:
+    anansiblevar_python_interpreter: /usr/bin/python3
+  connection: local
+
+  tasks:
+  - name: Fix every group role
+    local_action: command python3 ../../postgresql/common/execute-custom-file.py --profile {{ profile }} --rds-instance {{ inventory_hostname }} --file ../../postgresql/common/pg_fix_grant_roles_python.sql --no-opsgenie
+    register: result
+  - name: Obfuscate fraud
+    local_action: command python3 ../../postgresql/common/execute-custom-file.py --profile {{ profile }} --rds-instance {{ inventory_hostname }} --file ../../postgresql/common/pg_fix_obfuscate_fraud.sql --no-opsgenie
+    register: result
+    tags:
+      - fraud

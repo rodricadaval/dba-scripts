@@ -1,0 +1,10 @@
+- name: Check PerformanceInsights Status
+  hosts: "{{ service }}"
+  connection: local
+
+  tasks:
+  - name: Check P_I status
+    shell: "aws rds describe-db-instances --db-instance-identifier {{ inventory_hostname }} --profile {{ profile }} | egrep -i \"PerformanceInsightsEnabled|DBInstanceStatus\" "
+    register: result
+
+  - debug: msg={{ result.stdout }}

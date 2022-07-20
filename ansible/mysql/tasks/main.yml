@@ -1,0 +1,13 @@
+---
+# tasks file for mysql
+- name: Get MySQL version with non-default credentials
+  mysql_info:
+    login_user: dbmonitoring
+    login_password: x7eKWxD4#94s2Vca%2g7ydN$
+    login_host: "{{ endpoint.address }}"
+    login_port: "{{ endpoint.port }}"
+    filter: version
+  register: hello
+
+- debug: 
+    msg: "endpoint: {{ anansiblevar_host }} version: {{ hello }}"

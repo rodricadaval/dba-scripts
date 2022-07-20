@@ -1,0 +1,72 @@
+- name: Check connectivity in Target Groups
+  hosts: "{{ service }}"
+  connection: local
+  vars:
+    anansiblevar_python_interpreter: /usr/bin/python3
+  vars_files:
+    - "../vars/postgres_vars.yml"
+    - "../vars/docdb_vars.yml"
+    - "../vars/mysql_vars.yml"
+  
+  tasks:
+   #- name: Including all admin vars
+   #  include_vars:
+   #    dir: ../vars
+
+   - name: Check connection to mysql
+     community.mysql.mysql_query:
+       #login_db: mysql
+       login_host: "{{ anansiblevar_host }}"
+       login_port: "{{ anansiblevar_port }}"
+       login_user: "{{ DB_ADMIN_MYSQL_USER }}"
+       login_password: "{{ DB_ADMIN_MYSQL_PASSWORD }}"
+       query: SELECT count(*) FROM information_schema.SCHEMATA
+     when:       
+       - service == "mysql" or group_names[0] in ["mysql","aurora","aurora_mysql"]  
+     register: result
+
+   - name: Debugging MySQL Database Quantity
+     debug:
+       msg: "{{ result.query_result }}"
+     when: '"query_result" in result.keys()'
+     tags:
+         - verbose     
+
+   - name: Check connection to postgres
+     postgresql_query:
+       db: postgres
+       login_host: "{{ anansiblevar_host }}"
+       login_port: "{{ anansiblevar_port }}"
+       login_user: "{{ DB_ADMIN_PG_USER }}"
+       login_password: "{{ DB_ADMIN_PG_PASSWORD }}"
+       query: SELECT count(*) FROM pg_database
+     when:
+       - service == "postgres" or group_names[0] in ["postgres","aurora-postgres"]
+     register: result
+
+   - name: Debugging PostgreSQL Database Quantity
+     debug:
+       msg: "{{ result.query_result }}"
+     when: '"query_result" in result.keys()'
+     tags:
+         - verbose
+
+   - name: Check connection to docdb
+     community.mongodb.mongodb_shell:
+       db: admin
+       login_host: "{{ anansiblevar_host }}"
+       login_port: "{{ anansiblevar_port }}"
+       login_user: "{{ DB_ADMIN_DOCDB_USER }}"
+       login_password: "{{ DB_ADMIN_DOCDB_PASSWORD }}"     
+       #eval: "db.adminCommand('listDatabases')"
+       eval: "db.getMongo().getDBNames().length"
+     when:
+       - service == "docdb" or group_names[0] in ["docdb"]
+     register: result
+   
+   - name: Debugging DocDB Database Quantity
+     debug:
+       msg: "{{ result.transformed_output }}"
+     when: '"msg" in result.keys()'
+     tags:
+         - verbose

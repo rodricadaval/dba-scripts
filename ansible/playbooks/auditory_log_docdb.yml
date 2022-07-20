@@ -1,0 +1,12 @@
+- name: Check connectivity in Target Groups
+  hosts: "payments"
+  serial: 3
+  connection: local
+  vars:
+    anansiblevar_python_interpreter: /usr/bin/python3
+  vars_files:
+    - "vars/postgres_vars.yml"
+
+  tasks:
+  - name: DocDB - Download log files
+    shell: "/usr/bin/python3 ~/aws/common/aws_rds_logfiles_move_to_s3.py docdb -c {{ anansiblevar_country }} -g {{ anansiblevar_groupname }} -l {{ inventory_hostname }} -s {{ anansiblevar_s3 }}"

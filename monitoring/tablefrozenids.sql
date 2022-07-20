@@ -1,0 +1,1 @@
+SELECT n.nspname AS schema, c.relname AS table, AGE(t.relfrozenxid) transactions FROM pg_class c INNER JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace INNER JOIN pg_class t ON c.reltoastrelid = t.oid WHERE c.relkind = 'r' ORDER BY 3 DESC LIMIT 300;

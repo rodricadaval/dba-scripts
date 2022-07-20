@@ -1,0 +1,5 @@
+db.adminCommand({aggregate: 1,
+    pipeline: [{$currentOp: {allUsers: true, idleConnections: true}},
+               {$match: {ns: {$eq: "db.test"}}}],
+    cursor: {}
+});

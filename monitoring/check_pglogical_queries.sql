@@ -1,0 +1,1 @@
+SELECT pid, datname, usename, application_name, client_addr, client_port, query_start, wait_event_type, wait_event, state, left(query, 80) as query FROM pg_stat_activity WHERE usename = 'dba_test_service' and application_name ilike '%subscription%' ORDER BY query_start DESC;

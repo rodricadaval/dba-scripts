@@ -1,0 +1,10 @@
+db.adminCommand({
+    aggregate: 1,
+    pipeline: [
+        {$currentOp: {}},
+        {$match: 
+            {$or: 
+                [{secs_running: {$gt: 10}},
+                 {WaitState: {$exists: true}}]}}],
+    cursor: {}
+});

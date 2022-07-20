@@ -1,0 +1,1 @@
+db.getSiblingDB("admin").runCommand({ listDatabases: 1 }).databases.forEach(function(x) { print('OK:'+x.name+':'+x.sizeOnDisk) } )

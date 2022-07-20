@@ -1,0 +1,7 @@
+- name: Check integer state in groups
+  hosts: "{{ group }}"
+  connection: local
+  
+  tasks:
+  - name: Check in profile
+    local_action: command python3 ~/postgresql/common/integer_reaching_limit.py --profile {{ inventory_hostname }}
