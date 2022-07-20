@@ -426,7 +426,7 @@ def createOrUpdateTargetMSRole():
             fields = each_conf.split("=")
             cur_postgres_target.execute("ALTER ROLE \"{}\" SET {}='{}';".format(target_conf['role'], fields[0],
                                                                        fields[1]))
-        cur_postgres_target.execute("GRANT writeallaccess TO \"{}\";".format(target_conf['role']))
+        cur_postgres_target.execute("GRANT writeaccess TO \"{}\";".format(target_conf['role']))
         cur_postgres_target.execute("GRANT \"{}\" TO postgres;".format(target_conf['role']))
 
         cur_postgres_target.close()
@@ -1183,7 +1183,7 @@ def dumpRestore(type="schema"):
         cur_source = conn_source.cursor()
         with conn_target.cursor() as cur_target_temp:
             cur_target_temp.execute("CREATE SCHEMA IF NOT EXISTS pglogical;")
-            cur_target_temp.execute("ALTER ROLE fivetran_appl SET statement_timeout = 0;")
+            cur_target_temp.execute("ALTER ROLE fv_role SET statement_timeout = 0;")
         if str(owner_role) != str(rep_user):
             cur_source.execute(
                 "GRANT \"{}\" TO \"{}\";".format(owner_role, rep_user))
@@ -1358,7 +1358,7 @@ def createPublication():
             cur_source.execute("CREATE PUBLICATION \"" + source_conf['publication-name'] + "\" FOR ALL TABLES;")
         elif source_conf['version'].split(".")[0] in ["9"]:
             cur_source.execute("CREATE EXTENSION IF NOT EXISTS pglogical;")
-            cur_source.execute("GRANT USAGE ON SCHEMA pglogical TO {};".format("writeallaccess"))
+            cur_source.execute("GRANT USAGE ON SCHEMA pglogical TO {};".format("writeaccess"))
             cur_source.execute("GRANT ALL ON SCHEMA pglogical TO \"{}\";".format(source_conf['role']))
 
             cur_source.execute("SELECT pglogical.create_node(node_name := '" + source_conf['publication-name']
@@ -1553,7 +1553,7 @@ def createSubscriber(disabled=False):
                                + "', dsn := 'host=" + target_conf['host'] + " port=" + str(target_conf['port'])
                                + " user=" + rep_user + " password=" + rep_user_pass + " dbname="
                                + target_conf['database'] + "');")
-            cur_target.execute("GRANT USAGE ON SCHEMA pglogical TO {};".format("writeallaccess"))
+            cur_target.execute("GRANT USAGE ON SCHEMA pglogical TO {};".format("writeaccess"))
             if disabled:
                 cur_target.execute("SELECT pglogical.create_subscription(subscription_name := '"
                                     + target_conf['subscription-name'] + "', provider_dsn := 'host="
@@ -1717,7 +1717,7 @@ def kill_fivetran_queries_in_target():
         cur_target = conn_target.cursor()
         cur_target.execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity "
                            "WHERE usename = '{}' and datname = '{}';"
-                           .format("fivetran_appl", str(target_conf['database'])))
+                           .format("fv_role", str(target_conf['database'])))
     except Exception as e:
         pprint("Error killing fivetran queries:" + str(e))
         if "cur_target" in locals():
@@ -2004,7 +2004,7 @@ def createExtraRolesOnTarget(ms_dict):
                             fields = each_conf.split("=")
                             cur_target.execute("ALTER ROLE \"{}\" SET {}='{}';".format(each_ms['role'], fields[0],
                                                                                    fields[1]))
-                        cur_target.execute("GRANT writeallaccess TO \"{}\";".format(each_ms['role']))
+                        cur_target.execute("GRANT writeaccess TO \"{}\";".format(each_ms['role']))
                         cur_target.execute("GRANT \"{}\" TO postgres;".format(each_ms['role']))
                     else:
                         print("Role \"{}\" already created in target... ".format(each_ms['role']))
@@ -2028,9 +2028,9 @@ def createNominalRolesOnTarget():
         cur_source = conn_source.cursor()
         cur_target = conn_target.cursor()
         cur_source.execute("SELECT rolname FROM pg_roles WHERE rolcanlogin AND rolname NOT SIMILAR TO "
-                           "'dba%|postgres|writeallaccess|readaccess|fullreadaccess|toolreadaccess|%appl|%yerson%|"
-                           "felipev|felipevillamarin|redash%|fivetran%|retool%|pgpool%|admin|administrator|x1rformance"
-                           "|pgwatch2|dbmonitoring|devopsadmin|listman|newrelic_agent' ORDER BY rolname;")
+                           "'dba%|postgres|writeaccess|raccess|fullraccess|toolraccess|%appl|%otherserviceuser%|"
+                           "ownerv|owner|redash_role%|fivetran%|sometoolrole%|pgpool%|admin|adminuser|x1rformance"
+                           "|pgwatch2|dbmonitor|devopsadmin|otherserviceuser2|nr_ag' ORDER BY rolname;")
         rows = cur_source.fetchall()
         for row in rows:
             cur_target.execute(
@@ -2046,7 +2046,7 @@ def createNominalRolesOnTarget():
                     "ALTER ROLE \"" + str(row[0]) + "\" SET idle_in_transaction_session_timeout=1200000;")
                 cur_target.execute("ALTER ROLE \"" + str(row[0]) + "\" SET work_mem='64MB';")
                 cur_target.execute("ALTER ROLE \"" + str(row[0]) + "\" SET random_page_cost='1.1';")
-                cur_target.execute("GRANT fullreadaccess TO \"" + str(row[0]) + "\";")
+                cur_target.execute("GRANT fullraccess TO \"" + str(row[0]) + "\";")
                 cur_target.execute("GRANT \"" + str(row[0]) + "\" TO postgres;")
 
         cur_target.close()

@@ -315,7 +315,7 @@ def createOrUpdateTargetMSRole():
             "ALTER ROLE \"" + target_conf['role'] + "\" SET idle_in_transaction_session_timeout=1200000;")
         cur_postgres_target.execute("ALTER ROLE \"" + target_conf['role'] + "\" SET work_mem='64MB';")
         cur_postgres_target.execute("ALTER ROLE \"" + target_conf['role'] + "\" SET random_page_cost='1.1';")
-        cur_postgres_target.execute("GRANT writeallaccess TO \"" + target_conf['role'] + "\";")
+        cur_postgres_target.execute("GRANT writeaccess TO \"" + target_conf['role'] + "\";")
         cur_postgres_target.execute("GRANT \"" + target_conf['role'] + "\" TO postgres;")
 
         cur_postgres_target.close()
@@ -1310,7 +1310,7 @@ def createExtraRolesOnTarget(ms_dict):
                     "ALTER ROLE \"" + each_ms['role'] + "\" SET idle_in_transaction_session_timeout=1200000;")
                 cur_target.execute("ALTER ROLE \"" + each_ms['role'] + "\" SET work_mem='64MB';")
                 cur_target.execute("ALTER ROLE \"" + each_ms['role'] + "\" SET random_page_cost='1.1';")
-                cur_target.execute("GRANT writeallaccess TO \"" + each_ms['role'] + "\";")
+                cur_target.execute("GRANT writeaccess TO \"" + each_ms['role'] + "\";")
                 cur_target.execute("GRANT \"" + each_ms['role'] + "\" TO postgres;")
             else:
                 print("Role " + each_ms['role'] + " already created in target... ")
@@ -1335,9 +1335,9 @@ def createNominalRolesOnTarget():
         cur_source = conn_source.cursor()
         cur_target = conn_target.cursor()
         cur_source.execute("SELECT rolname FROM pg_roles WHERE rolcanlogin AND rolname NOT SIMILAR TO "
-                           "'dba%|postgres|writeallaccess|readaccess|fullreadaccess|toolreadaccess|%appl|%yerson%|"
-                           "felipev|felipevillamarin|redash%|fivetran%|retool%|pgpool%|admin|administrator|x1rformance"
-                           "|pgwatch2|dbmonitoring|devopsadmin|listman|newrelic_agent' ORDER BY rolname;")
+                           "'dba%|postgres|writeaccess|raccess|fullraccess|toolraccess|%appl|%otherserviceuser%|"
+                           "ownerv|owner|redash_role%|fivetran%|sometoolrole%|pgpool%|admin|adminuser|x1rformance"
+                           "|pgwatch2|dbmonitor|devopsadmin|otherserviceuser2|nr_ag' ORDER BY rolname;")
         rows = cur_source.fetchall()
         for row in rows:
             cur_target.execute(
@@ -1353,7 +1353,7 @@ def createNominalRolesOnTarget():
                     "ALTER ROLE \"" + str(row[0]) + "\" SET idle_in_transaction_session_timeout=1200000;")
                 cur_target.execute("ALTER ROLE \"" + str(row[0]) + "\" SET work_mem='64MB';")
                 cur_target.execute("ALTER ROLE \"" + str(row[0]) + "\" SET random_page_cost='1.1';")
-                cur_target.execute("GRANT fullreadaccess TO \"" + str(row[0]) + "\";")
+                cur_target.execute("GRANT fullraccess TO \"" + str(row[0]) + "\";")
                 cur_target.execute("GRANT \"" + str(row[0]) + "\" TO postgres;")
 
         cur_target.close()

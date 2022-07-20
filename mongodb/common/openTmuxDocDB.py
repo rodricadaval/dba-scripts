@@ -28,7 +28,7 @@ def createTmuxSession():
   sendCommand(cmd)
 
 def createTmuxWindow(name, endpoint, password):
-  cmd = "sudo tmux new-window -t docdbnew -n "+name+" mongo --username administrator --password "+str(password)+" --authenticationDatabase admin --host "+endpoint+" --port 27017"
+  cmd = "sudo tmux new-window -t docdbnew -n "+name+" mongo --username adminuser --password "+str(password)+" --authenticationDatabase admin --host "+endpoint+" --port 27017"
   sendCommand(cmd)
 
 def findAdminPass(name):
@@ -43,7 +43,7 @@ def findAdminPass(name):
     pass
   else:
     result = result.stdout.rstrip()
-    result = str(result).split("administrator:")
+    result = str(result).split("adminuser:")
     return result[1][:-1]
 
 def getDocDBList(fullprofile):

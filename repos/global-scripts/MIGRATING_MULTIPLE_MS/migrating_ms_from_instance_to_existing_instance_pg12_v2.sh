@@ -164,7 +164,7 @@ for ms in $MS_LIST_W_SPACES; do
 	
 	#CREACION DEL ROLE
 	echo -e "${BIRed}CREATING USER: $anansiblevar_USER_VALUE in $NEW_RDS_HOST ${No_Color}"; echo
-	echo "awspsql_create_user_with_country.sh -c ${COUNTRY_CODE} -i ${NEW_RDS_INSTANCE} -u ${PRODUCTIVE_RDS_USER} -d postgres -n $anansiblevar_USER_VALUE -r writeallaccess" > ${LOGS_PATH}/individual_role_creation.log
+	echo "awspsql_create_user_with_country.sh -c ${COUNTRY_CODE} -i ${NEW_RDS_INSTANCE} -u ${PRODUCTIVE_RDS_USER} -d postgres -n $anansiblevar_USER_VALUE -r writeaccess" > ${LOGS_PATH}/individual_role_creation.log
 	cat ${LOGS_PATH}/individual_role_creation.log
 	echo ""
 	cat ${LOGS_PATH}/individual_role_creation.log >> ${LOGS_PATH}/role_creation.log
